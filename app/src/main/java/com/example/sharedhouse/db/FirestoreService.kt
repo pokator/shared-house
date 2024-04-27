@@ -6,58 +6,97 @@ import com.example.sharedhouse.models.Apartment
 import com.example.sharedhouse.models.PurchasedItem
 import com.example.sharedhouse.models.UnpurchasedExpense
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class FirestoreService {
     private val db = FirebaseFirestore.getInstance()
     private val collectionRoot = "apartments"
 
+    fun dbGetAllRoomatesNames(
+        allRoomates: MutableLiveData<HashMap<String, String>>,
+        apartmentID: String,
+    ) {
+//        db.collection("people")
+//            .whereEqualTo("apartmentId", apartmentID)
+//            .get()
+//            .addOnSuccessListener { querySnapshot ->
+//                Log.d(javaClass.simpleName, "all roomates fetch successful")
+//                val roomatesMap = HashMap<String, String>()
+//                for (document in querySnapshot.documents) {
+//                    val userId = document.id
+//                    val userName = document.getString("name") ?: "Unknown"
+//                    roomatesMap[userId] = userName
+//                }
+//                allRoomates.postValue(roomatesMap)
+//                callback()
+//            }
+//            .addOnFailureListener { exception ->
+//                Log.d(javaClass.simpleName, "all roomates fetch FAILED", exception)
+//            }
+//    }
+        val dbRef = db.collection("people")
+            .whereEqualTo("apartmentId", apartmentID)
+        dbRef.addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                Log.d(javaClass.simpleName, "all roomates fetch FAILED", exception)
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null) {
+                val roomatesMap = HashMap<String, String>()
+                for (document in snapshot.documents) {
+                    val userId = document.id
+                    val userName = document.getString("name") ?: "Unknown"
+                    roomatesMap[userId] = userName
+                }
+                allRoomates.postValue(roomatesMap)
+            }
+        }
+    }
+
+
     fun dbFetchAllUnpurchasedExpenses(
         unpurchasedExpenseList: MutableLiveData<List<UnpurchasedExpense>>,
         curUserApartmentID: String,
     ) {
-        db.collection(collectionRoot)
+        val collectionReference = db.collection(collectionRoot)
             .document(curUserApartmentID)
             .collection("unpurchased_expenses")
-            .get()
-            .addOnSuccessListener { result ->
-                Log.d(javaClass.simpleName, "all unpurchased expense fetch ${result!!.documents.size}")
-                // NB: This is done on a background thread
-                unpurchasedExpenseList.postValue(result.documents.mapNotNull {
-                    it.toObject(UnpurchasedExpense::class.java)
-                })
+        collectionReference.addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                Log.d(javaClass.simpleName, "unpurchased expenses fetch FAILED", exception)
+                return@addSnapshotListener
             }
-            .addOnFailureListener {
-                Log.d(javaClass.simpleName, "all unpurchased fetch FAILED ", it)
+            if (snapshot != null) {
+                val expenses = snapshot.documents.mapNotNull { it.toObject(UnpurchasedExpense::class.java) }
+                unpurchasedExpenseList.postValue(expenses)
             }
+        }
     }
-
 
     fun dbFetchAllPurchasedExpenses(
         purchasedExpenseList: MutableLiveData<List<PurchasedItem>>,
         curUserApartmentID: String,
         callback: () -> Unit
     ) {
-        db.collection(collectionRoot)
+        val collectionReference = db.collection(collectionRoot)
             .document(curUserApartmentID)
             .collection("completed_expenses")
-            .get()
-            .addOnSuccessListener { result ->
-                Log.d(javaClass.simpleName, "all purchased expense fetch ${result!!.documents.size}")
-                // NB: This is done on a background thread
-                purchasedExpenseList.postValue(result.documents.mapNotNull {
-                    it.toObject(PurchasedItem::class.java)
-                })
 
-                result.documents.mapNotNull {
-                    Log.d(javaClass.simpleName, "all purchased expense fetch ${it.toObject(PurchasedItem::class.java)}")
-                 }
-
+        collectionReference.addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                Log.d(javaClass.simpleName, "purchased expenses fetch FAILED", exception)
                 callback()
+                return@addSnapshotListener
             }
-            .addOnFailureListener {
-                Log.d(javaClass.simpleName, "all purchased fetch FAILED ", it)
+
+            if (snapshot != null) {
+                val expenses = snapshot.documents.mapNotNull { it.toObject(PurchasedItem::class.java) }
+                purchasedExpenseList.postValue(expenses)
             }
+            callback()
+        }
     }
 
     //Function to change the hasPaid value of FireBase user in a purchased item.
@@ -168,12 +207,12 @@ class FirestoreService {
             .document(curUserApartmentID)
             .collection("completed_expenses")
             .document(purchasedItem.firestoreID)
-            .update("comments", purchasedItem.comments.plus(commentMap))
+            .update("comments", FieldValue.arrayUnion(commentMap))
             .addOnSuccessListener {
                 Log.d(javaClass.simpleName, "Comment added to purchased item")
-                val updatedPurchasedItem = purchasedItem.apply {
-                    comments = comments.plus(commentMap)
-                }
+                val updatedPurchasedItem = purchasedItem.copy(
+                    comments = purchasedItem.comments + commentMap // Use copy and + for immutability
+                )
                 callback(updatedPurchasedItem)
             }
             .addOnFailureListener { e ->
@@ -186,11 +225,13 @@ class FirestoreService {
     fun dbAddNewApartment(
         apartmentName: String,
         curUser: FirebaseUser,
+        password: String,
         callback: () -> Unit
     ) {
         val newApartment = hashMapOf(
             "name" to apartmentName,
             "roomates" to List<String>(1) { curUser.uid },
+            "password" to password
         )
         db.collection(collectionRoot)
             .add(newApartment)
@@ -222,41 +263,85 @@ class FirestoreService {
         apartmentToUpdate: MutableLiveData<Apartment>,
         callback: () -> Unit
     ) {
-        db.collection("people")
-            .document(user.uid)
-            .get()
-            .addOnSuccessListener { result ->
-                Log.d(javaClass.simpleName, "User people fetch ${result}")
-                Log.d(javaClass.simpleName, "User people fetch ${result!!.data}")
-                if (result.data == null) {
-                    return@addOnSuccessListener
+        // Fetch user data using a snapshot listener
+        val userRef = db.collection("people").document(user.uid)
+        userRef.addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                Log.d(javaClass.simpleName, "User people fetch FAILED", exception)
+                callback()
+                return@addSnapshotListener
+            }
 
+            if (snapshot != null) {
+                val userData = snapshot.data ?: return@addSnapshotListener // Exit if no data
+                val apartmentID = userData["apartmentId"] as String?
+                if (apartmentID == null) {
+                    callback() // No apartment ID found, trigger callback (optional)
+                    return@addSnapshotListener
                 }
-                val apartmentID = result.data!!["apartmentId"] as String
-                db.collection(collectionRoot)
-                    .document(apartmentID)
-                    .get()
-                    .addOnSuccessListener { apartmentResult ->
-                        Log.d(javaClass.simpleName, "User apartment fetch ${apartmentResult}")
-                        Log.d(javaClass.simpleName, "User apartment fetch ${apartmentResult!!.data}")
-                        if (apartmentResult.data == null) {
-                            return@addOnSuccessListener
-                        }
 
-                        val apartmentName = apartmentResult.data!!["name"] as String
-                        val roomates = apartmentResult.data!!["roomates"] as List<String>
-                        val newApt = Apartment(apartmentName, roomates, firestoreID = apartmentResult.id)
+                // Fetch apartment data using another snapshot listener (nested)
+                val apartmentRef = db.collection(collectionRoot).document(apartmentID)
+                apartmentRef.addSnapshotListener { apartmentSnapshot, apartmentException ->
+                    if (apartmentException != null) {
+                        Log.d(javaClass.simpleName, "User apartment fetch FAILED", apartmentException)
+                        callback()
+                        return@addSnapshotListener
+                    }
+
+                    if (apartmentSnapshot != null) {
+                        val apartmentData = apartmentSnapshot.data ?: return@addSnapshotListener
+                        val apartmentName = apartmentData["name"] as String
+                        val roomates = apartmentData["roomates"] as List<String>
+                        val newApt = Apartment(apartmentName, roomates, firestoreID = apartmentSnapshot.id)
                         apartmentToUpdate.postValue(newApt)
                         callback()
                     }
-                    .addOnFailureListener {
-                        Log.d(javaClass.simpleName, "User apartment fetch FAILED ", it)
-                    }
+                }
             }
-            .addOnFailureListener {
-                Log.d(javaClass.simpleName, "User apartment fetch FAILED ", it)
-            }
+        }
     }
+
+//    fun dbGetUsersApartmentID(
+//        user: FirebaseUser,
+//        apartmentToUpdate: MutableLiveData<Apartment>,
+//        callback: () -> Unit
+//    ) {
+//        db.collection("people")
+//            .document(user.uid)
+//            .get()
+//            .addOnSuccessListener { result ->
+//                Log.d(javaClass.simpleName, "User people fetch ${result}")
+//                Log.d(javaClass.simpleName, "User people fetch ${result!!.data}")
+//                if (result.data == null) {
+//                    return@addOnSuccessListener
+//
+//                }
+//                val apartmentID = result.data!!["apartmentId"] as String
+//                db.collection(collectionRoot)
+//                    .document(apartmentID)
+//                    .get()
+//                    .addOnSuccessListener { apartmentResult ->
+//                        Log.d(javaClass.simpleName, "User apartment fetch ${apartmentResult}")
+//                        Log.d(javaClass.simpleName, "User apartment fetch ${apartmentResult!!.data}")
+//                        if (apartmentResult.data == null) {
+//                            return@addOnSuccessListener
+//                        }
+//
+//                        val apartmentName = apartmentResult.data!!["name"] as String
+//                        val roomates = apartmentResult.data!!["roomates"] as List<String>
+//                        val newApt = Apartment(apartmentName, roomates, firestoreID = apartmentResult.id)
+//                        apartmentToUpdate.postValue(newApt)
+//                        callback()
+//                    }
+//                    .addOnFailureListener {
+//                        Log.d(javaClass.simpleName, "User apartment fetch FAILED ", it)
+//                    }
+//            }
+//            .addOnFailureListener {
+//                Log.d(javaClass.simpleName, "User apartment fetch FAILED ", it)
+//            }
+//    }
 
     //Upon user clicking join button, this function is called
     fun dbAddUserToExisitingApartment (
@@ -304,45 +389,39 @@ class FirestoreService {
     fun dbGetAllAparments(
         allApartments: MutableLiveData<List<Apartment>>
     ) {
-        val apartments = mutableListOf<Apartment>()
-        db.collection(collectionRoot)
-            .get()
-            .addOnSuccessListener { result ->
-                Log.d(javaClass.simpleName, "all apartments fetch ${result!!.documents.size}")
-                // NB: This is done on a background thread
-                apartments.addAll(result.documents.mapNotNull {
-                    it.toObject(Apartment::class.java)
-                })
+
+        val dbRef = db.collection(collectionRoot)
+        dbRef.addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                Log.d(javaClass.simpleName, "all apartments fetch FAILED ", exception)
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null) {
+                val apartments = snapshot.documents.mapNotNull { it.toObject(Apartment::class.java) }
+                Log.d(javaClass.simpleName, "all apartments fetch ${apartments.size}")
                 Log.d(javaClass.simpleName, "apartments: $apartments")
                 allApartments.postValue(apartments)
             }
-            .addOnFailureListener {
-                Log.d(javaClass.simpleName, "all apartments fetch FAILED ", it)
-            }
+        }
 
     }
 
-    fun dbGetAllRoomatesNames(
-        allRoomates: MutableLiveData<HashMap<String, String>>,
-        apartmentID: String,
-        callback: () -> Unit
-    ) {
-        db.collection("people")
-            .whereEqualTo("apartmentId", apartmentID)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                Log.d(javaClass.simpleName, "all roomates fetch successful")
-                val roomatesMap = HashMap<String, String>()
-                for (document in querySnapshot.documents) {
-                    val userId = document.id
-                    val userName = document.getString("name") ?: "Unknown"
-                    roomatesMap[userId] = userName
-                }
-                allRoomates.postValue(roomatesMap)
-                callback()
-            }
-            .addOnFailureListener { exception ->
-                Log.d(javaClass.simpleName, "all roomates fetch FAILED", exception)
-            }
-    }
+    //        val apartments = mutableListOf<Apartment>()
+//        db.collection(collectionRoot)
+//            .get()
+//            .addOnSuccessListener { result ->
+//                Log.d(javaClass.simpleName, "all apartments fetch ${result!!.documents.size}")
+//                // NB: This is done on a background thread
+//                apartments.addAll(result.documents.mapNotNull {
+//                    it.toObject(Apartment::class.java)
+//                })
+//                Log.d(javaClass.simpleName, "apartments: $apartments")
+//                allApartments.postValue(apartments)
+//            }
+//            .addOnFailureListener {
+//                Log.d(javaClass.simpleName, "all apartments fetch FAILED ", it)
+//            }
+
+
 }

@@ -65,6 +65,8 @@ class ProfileFragment : Fragment() {
 
         binding.logout.setOnClickListener {
             authViewModel.signOut()
+            binding.apartmentButton.text = "Join an apartment"
+            binding.apartmentButton.isClickable = true
             AuthInit(authViewModel, signInLauncher)
         }
     }

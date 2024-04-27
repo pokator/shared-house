@@ -18,15 +18,30 @@
         android:layout_marginBottom="20dp"
         android:layout_marginLeft="50dp"
         android:layout_marginRight="50dp">
-        <EditText
-            android:id="@+id/new_apartment_name"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="New Apartment"
-            android:layout_weight="1"
-            android:textSize="20sp"
-            android:layout_marginEnd="5dp"/>
+            android:layout_weight="2"
+            android:orientation="vertical">
+            <EditText
+                android:id="@+id/new_apartment_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="New Apartment"
+                android:textSize="20sp"
+                android:layout_marginEnd="5dp"/>
+            <EditText
+                android:id="@+id/new_apartment_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:hint="New Password"
+                android:textSize="20sp"
+                android:layout_marginEnd="5dp"/>
+        </LinearLayout>
+
         <Button
+            android:layout_gravity="center_vertical"
             android:id="@+id/button_create"
             android:layout_width="5dp"
             android:layout_height="wrap_content"

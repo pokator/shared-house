@@ -48,7 +48,7 @@ class ApartmentListFragment : Fragment() {
             adapter.submitList(it)
         }
         binding.buttonCreate.setOnClickListener {
-            dataViewModel.addNewApartment(binding.newApartmentName.text.toString())
+            dataViewModel.addNewApartment(binding.newApartmentName.text.toString(), binding.newApartmentPassword.text.toString())
             findNavController().popBackStack()
         }
     }

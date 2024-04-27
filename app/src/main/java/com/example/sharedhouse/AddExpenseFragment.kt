@@ -1,6 +1,7 @@
 package com.example.sharedhouse
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -38,17 +39,19 @@ class AddExpenseFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
+        Log.d(tag, "in add expense fragment.")
+        viewModel.updateCurrentApartment()
         var roommateCount = 0
         viewModel.observeCurrentApartment().observe(viewLifecycleOwner) {
-            viewModel.getAllRoomates()
+            viewModel.getAllRoomates() {
+                Log.d("ViewModel", "number of roommates: ${it.roomates.size}")
+            }
             roommateCount = it.roomates.size
             var apt = it
 
-
-
             when (roommateCount) {
                 0 -> {
+                    binding.layoutMe.visibility = View.GONE
                     binding.layoutOne.visibility = View.GONE
                     binding.layoutTwo.visibility = View.GONE
                     binding.layoutThree.visibility = View.GONE
@@ -57,31 +60,50 @@ class AddExpenseFragment : Fragment() {
                     binding.layoutTwo.isEnabled = false
                     binding.layoutThree.isEnabled = false
                     binding.layoutFour.isEnabled = false
-                    binding.roommateCheckboxOne.isChecked = false
-                    binding.roommateCheckboxTwo.isChecked = false
-                    binding.roommateCheckboxThree.isChecked = false
-                    binding.roommateCheckboxFour.isChecked = false
+                    binding.layoutMe.isEnabled = false
+
                 }
 
                 1 -> {
-                    binding.layoutOne.visibility = View.VISIBLE
+                    binding.layoutMe.visibility = View.VISIBLE
+                    binding.layoutMe.isEnabled = true
+                    binding.layoutOne.visibility = View.INVISIBLE
                     binding.layoutTwo.visibility = View.GONE
+                    binding.layoutThree.visibility = View.GONE
+                    binding.layoutFour.visibility = View.GONE
+                    binding.layoutOne.isEnabled = false
+                    binding.layoutTwo.isEnabled = false
+                    binding.layoutThree.isEnabled = false
+                    binding.layoutFour.isEnabled = false
+                    sharedWith.add(it.roomates[0])
+                    viewModel.observeAllRoomates().observe(viewLifecycleOwner) {
+                        binding.labelMe.text = it[apt.roomates[0]]
+                    }
+                }
+
+                2 -> {
+                    binding.layoutMe.visibility = View.GONE
+                    binding.layoutMe.isEnabled = false
+                    binding.layoutOne.visibility = View.VISIBLE
+                    binding.layoutTwo.visibility = View.INVISIBLE
                     binding.layoutThree.visibility = View.GONE
                     binding.layoutFour.visibility = View.GONE
                     binding.layoutOne.isEnabled = true
                     binding.layoutTwo.isEnabled = false
                     binding.layoutThree.isEnabled = false
                     binding.layoutFour.isEnabled = false
-                    binding.roommateCheckboxTwo.isChecked = false
-                    binding.roommateCheckboxThree.isChecked = false
-                    binding.roommateCheckboxFour.isChecked = false
                     sharedWith.add(it.roomates[0])
+                    sharedWith.add(it.roomates[1])
                     viewModel.observeAllRoomates().observe(viewLifecycleOwner) {
-                        binding.labelTextView1.text = it[apt.roomates[0]]
+                        binding.labelMe.text = it[apt.roomates[0]]
+                        binding.labelTextView1.text = it[apt.roomates[1]]
                     }
+
                 }
 
-                2 -> {
+                3 -> {
+                    binding.layoutMe.visibility = View.VISIBLE
+                    binding.layoutMe.isEnabled = true
                     binding.layoutOne.visibility = View.VISIBLE
                     binding.layoutTwo.visibility = View.VISIBLE
                     binding.layoutThree.visibility = View.GONE
@@ -90,40 +112,44 @@ class AddExpenseFragment : Fragment() {
                     binding.layoutTwo.isEnabled = true
                     binding.layoutThree.isEnabled = false
                     binding.layoutFour.isEnabled = false
-                    binding.roommateCheckboxThree.isChecked = false
-                    binding.roommateCheckboxFour.isChecked = false
-                    sharedWith.add(it.roomates[0])
-                    sharedWith.add(it.roomates[1])
-                    viewModel.observeAllRoomates().observe(viewLifecycleOwner) {
-                        binding.labelTextView1.text = it[apt.roomates[0]]
-                        binding.labelTextView2.text = it[apt.roomates[1]]
-                    }
-
-                }
-
-                3 -> {
-                    binding.layoutOne.visibility = View.VISIBLE
-                    binding.layoutTwo.visibility = View.VISIBLE
-                    binding.layoutThree.visibility = View.VISIBLE
-                    binding.layoutFour.visibility = View.GONE
-                    binding.layoutOne.isEnabled = true
-                    binding.layoutTwo.isEnabled = true
-                    binding.layoutThree.isEnabled = true
-                    binding.layoutFour.isEnabled = false
-                    binding.roommateCheckboxFour.isChecked = false
-
                     sharedWith.add(it.roomates[0])
                     sharedWith.add(it.roomates[1])
                     sharedWith.add(it.roomates[2])
                     viewModel.observeAllRoomates().observe(viewLifecycleOwner) {
-                        binding.labelTextView1.text = it[apt.roomates[0]]
-                        binding.labelTextView2.text = it[apt.roomates[1]]
-                        binding.labelTextView3.text = it[apt.roomates[2]]
+                        binding.labelMe.text = it[apt.roomates[0]]
+                        binding.labelTextView1.text = it[apt.roomates[1]]
+                        binding.labelTextView2.text = it[apt.roomates[2]]
 
                     }
                 }
 
                 4 -> {
+                    binding.layoutMe.visibility = View.VISIBLE
+                    binding.layoutMe.isEnabled = true
+                    binding.layoutOne.visibility = View.VISIBLE
+                    binding.layoutTwo.visibility = View.VISIBLE
+                    binding.layoutThree.visibility = View.VISIBLE
+                    binding.layoutFour.visibility = View.INVISIBLE
+                    binding.layoutOne.isEnabled = true
+                    binding.layoutTwo.isEnabled = true
+                    binding.layoutThree.isEnabled = true
+                    binding.layoutFour.isEnabled = false
+                    sharedWith.add(it.roomates[0])
+                    sharedWith.add(it.roomates[1])
+                    sharedWith.add(it.roomates[2])
+                    sharedWith.add(it.roomates[3])
+                    viewModel.observeAllRoomates().observe(viewLifecycleOwner) {
+                        binding.labelMe.text = it[apt.roomates[0]]
+                        binding.labelTextView1.text = it[apt.roomates[1]]
+                        binding.labelTextView2.text = it[apt.roomates[2]]
+                        binding.labelTextView3.text = it[apt.roomates[3]]
+                    }
+
+                }
+
+                5 -> {
+                    binding.layoutMe.visibility = View.VISIBLE
+                    binding.layoutMe.isEnabled = true
                     binding.layoutOne.visibility = View.VISIBLE
                     binding.layoutTwo.visibility = View.VISIBLE
                     binding.layoutThree.visibility = View.VISIBLE
@@ -136,14 +162,14 @@ class AddExpenseFragment : Fragment() {
                     sharedWith.add(it.roomates[1])
                     sharedWith.add(it.roomates[2])
                     sharedWith.add(it.roomates[3])
+                    sharedWith.add(it.roomates[4])
                     viewModel.observeAllRoomates().observe(viewLifecycleOwner) {
-                        binding.labelTextView1.text = it[apt.roomates[0]]
-                        binding.labelTextView2.text = it[apt.roomates[1]]
-                        binding.labelTextView3.text = it[apt.roomates[2]]
-                        binding.labelTextView4.text = it[apt.roomates[3]]
-
+                        binding.labelMe.text = it[apt.roomates[0]]
+                        binding.labelTextView1.text = it[apt.roomates[1]]
+                        binding.labelTextView2.text = it[apt.roomates[2]]
+                        binding.labelTextView3.text = it[apt.roomates[3]]
+                        binding.labelTextView4.text = it[apt.roomates[4]]
                     }
-
                 }
 
                 else -> println("Error")
@@ -160,9 +186,26 @@ class AddExpenseFragment : Fragment() {
                         if (binding.taxCheckbox.isChecked) {
                             amount *= 1.0625
                         }
+                        // Valid setup of item details.
+                        var shareList = mutableListOf<String>()
+                        if (binding.meCheckbox.isChecked) {
+                            shareList.add(sharedWith[0])
+                        }
+                        if (binding.roommateCheckboxOne.isChecked) {
+                            shareList.add(sharedWith[1])
+                        }
+                        if (binding.roommateCheckboxTwo.isChecked) {
+                            shareList.add(sharedWith[2])
+                        }
+                        if (binding.roommateCheckboxThree.isChecked) {
+                            shareList.add(sharedWith[3])
+                        }
+                        if (binding.roommateCheckboxFour.isChecked) {
+                            shareList.add(sharedWith[4])
+                        }
 
                         val map = HashMap<String, Boolean>()
-                        for (id in sharedWith){
+                        for (id in shareList){
                             map[id] = false
                         }
 

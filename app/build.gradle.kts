@@ -59,4 +59,5 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.ui.auth)
     implementation("com.google.firebase:firebase-firestore:24.11.1")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

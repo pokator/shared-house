@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="40dp">
+    android:layout_height="50dp">
     <TextView
         android:id="@+id/apartment_name"
         android:layout_width="250dp"
@@ -13,10 +13,37 @@
         android:gravity="center_vertical"/>
 
     <Button
+        android:visibility="visible"
         android:id="@+id/join_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:text="Join"/>
+
+    <LinearLayout
+        android:id="@+id/password_layout"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:textSize="15sp"
+            android:layout_marginEnd="5dp"/>
+        <ImageButton
+            android:id="@+id/confirm_join"
+            android:background="@drawable/check_circle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:layout_marginEnd="5dp"/>
+
+    </LinearLayout>
 
 </LinearLayout>

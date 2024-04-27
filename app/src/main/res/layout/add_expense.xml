@@ -98,13 +98,13 @@
         android:layout_marginBottom="8dp"/>
 
     <LinearLayout
-        android:id="@+id/layoutOne"
+        android:id="@+id/layout_me"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/labelTextView4"
+            android:id="@+id/label_me"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:text="Me:"
@@ -114,17 +114,16 @@
 
         <CheckBox
             android:id="@+id/me_checkbox"
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:checked="true"/>
+            android:textSize="18sp"/>
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/layoutTwo"
+        android:id="@+id/layoutOne"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:orientation="horizontal">
 
         <TextView
@@ -138,17 +137,16 @@
 
         <CheckBox
             android:id="@+id/roommate_checkbox_one"
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:checked="true"/>
+            android:textSize="18sp"/>
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/layoutThree"
+        android:id="@+id/layoutTwo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:orientation="horizontal">
 
         <TextView
@@ -162,15 +160,14 @@
 
         <CheckBox
             android:id="@+id/roommate_checkbox_two"
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:checked="true"/>
+            android:textSize="18sp"/>
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="invisible"
-        android:id="@+id/layoutFour"
+        android:visibility="gone"
+        android:id="@+id/layoutThree"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -186,20 +183,20 @@
 
         <CheckBox
             android:id="@+id/roommate_checkbox_three"
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:checked="true"/>
+            android:textSize="18sp"/>
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="invisible"
+        android:id="@+id/layoutFour"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/labelTextView5"
+            android:id="@+id/labelTextView4"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:text="Roommate 4:"
@@ -209,10 +206,9 @@
 
         <CheckBox
             android:id="@+id/roommate_checkbox_four"
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:checked="true"/>
+            android:textSize="18sp"/>
     </LinearLayout>
 
     <Button

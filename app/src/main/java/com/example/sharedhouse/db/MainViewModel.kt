@@ -1,5 +1,6 @@
 package com.example.sharedhouse.db
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.sharedhouse.models.Apartment
@@ -13,12 +14,13 @@ class MainViewModel : ViewModel() {
     private var curApartment = MutableLiveData<Apartment>()
     private var total = MutableLiveData<HashMap<String, Double>>()
     private var allApartments = MutableLiveData<List<Apartment>>()
-    private var allRoomates = MutableLiveData<HashMap<String, String>>()
+    var allRoomates = MutableLiveData<HashMap<String, String>>()
 
     init {
         curApartment.observeForever { apartment ->
-            getAllRoomates()
-
+            getAllRoomates(){
+                updatePurchasedItems()
+            }
         }
     }
 
@@ -36,13 +38,11 @@ class MainViewModel : ViewModel() {
     //Get all purchased items
     fun updatePurchasedItems() {
         FirestoreService().dbFetchAllPurchasedExpenses(purchasedItems, curApartment.value!!.firestoreID) {}
-
     }
 
     //Get all unpurchased items
     fun updateUnpurchasedItems() {
         FirestoreService().dbFetchAllUnpurchasedExpenses(unpurchasedItems, curApartment.value!!.firestoreID)
-
     }
 
     //Adding a new item to the unpurchased expenses
@@ -50,8 +50,8 @@ class MainViewModel : ViewModel() {
         FirestoreService().dbAddUnpurchasedExpense(unpurchasedExpense, curApartment.value!!.firestoreID)
     }
 
-    fun addNewApartment(apartmentId: String) {
-        FirestoreService().dbAddNewApartment(apartmentId, FirebaseAuth.getInstance().currentUser!!) {
+    fun addNewApartment(apartmentId: String, password: String) {
+        FirestoreService().dbAddNewApartment(apartmentId, FirebaseAuth.getInstance().currentUser!!, password) {
             updateCurrentApartment()
         }
     }
@@ -60,15 +60,14 @@ class MainViewModel : ViewModel() {
         FirestoreService().dbAddUserToExisitingApartment(FirebaseAuth.getInstance().currentUser!!,apartmentId) {
             updateCurrentApartment()
         }
-
     }
 
     fun updateCurrentApartment() {
         FirestoreService().dbGetUsersApartmentID(FirebaseAuth.getInstance().currentUser!!, curApartment) {
-
+            val apartmentID = curApartment.value?.firestoreID ?: return@dbGetUsersApartmentID
+            getAllRoomates(){}
         }
     }
-
 
     fun getAllApartments() {
         FirestoreService().dbGetAllAparments(allApartments)
@@ -78,11 +77,9 @@ class MainViewModel : ViewModel() {
         return allRoomates.value!!
     }
 
-    fun getAllRoomates() {
-        FirestoreService().dbGetAllRoomatesNames(allRoomates, curApartment.value!!.firestoreID) {
-            updateUnpurchasedItems()
-            updatePurchasedItems()
-        }
+    fun getAllRoomates(callback: () -> Unit) {
+        FirestoreService().dbGetAllRoomatesNames(allRoomates, curApartment.value!!.firestoreID)
+        callback()
     }
 
     fun addPurchasedItem(unpurchasedExpense: UnpurchasedExpense, amount: Double, comment: String) {
@@ -157,7 +154,6 @@ class MainViewModel : ViewModel() {
 
                 }
             }
-
         }
 
         //Find net balance of the user.
