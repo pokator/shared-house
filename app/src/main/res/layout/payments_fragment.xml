@@ -132,10 +132,6 @@
                             android:textColor="@android:color/black"/>
                 </LinearLayout>
 
-                <com.github.mikephil.charting.charts.BarChart
-                    android:id="@+id/chart"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"/>
                 <Button
                     android:layout_width="150dp"
                     android:layout_gravity="center"

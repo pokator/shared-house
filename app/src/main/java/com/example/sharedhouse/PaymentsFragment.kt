@@ -64,12 +64,6 @@ class PaymentsFragment : Fragment() {
             dataViewModel.calculateTotals()
         }
 
-        val barChart = binding.chart
-        barChart.description.isEnabled = false
-        barChart.axisRight.isEnabled = false
-        barChart.xAxis.isEnabled = false
-        barChart.xAxis.setDrawGridLines(false)
-        barChart.axisLeft.setDrawGridLines(false)
 
         dataViewModel.observeTotal().observe(viewLifecycleOwner) {
             val totalOwed = it[FirebaseAuth.getInstance().currentUser!!.uid]
@@ -88,9 +82,6 @@ class PaymentsFragment : Fragment() {
             dataViewModel.getAllRoomates(){}
             roommateCount = it.roomates.size - 1
             val apt = it
-            val entries = ArrayList<BarEntry>()
-            var minimum = 0f
-            var maximum = 0f
             //Conditionally displaying checkboxes
             when (roommateCount) {
                 0 -> {
@@ -120,7 +111,6 @@ class PaymentsFragment : Fragment() {
                     }
                     dataViewModel.observeTotal().observe(viewLifecycleOwner) {
                         val totalOwed = it[apt.roomates[0]]
-                        entries.add(BarEntry(1f, totalOwed!!.toFloat()))
                         if (totalOwed!! > 0.0) {
                             binding.personOneBalance.setTextColor(Color.rgb(139, 0, 0))
                             binding.personOneBalance.text = "You owe them $${String.format("%.2f", totalOwed)}"
@@ -128,8 +118,7 @@ class PaymentsFragment : Fragment() {
                             binding.personOneBalance.setTextColor(Color.rgb( 1,  150,  32))
                             binding.personOneBalance.text = "They owe you $${String.format("%.2f", abs(totalOwed))}"
                         }
-                        minimum = it.values.min().coerceAtMost(0.0).toFloat()
-                        maximum = it.values.max().coerceAtLeast(0.0).toFloat()
+
                     }
                 }
                 2 -> {
@@ -151,7 +140,6 @@ class PaymentsFragment : Fragment() {
                     }
                     dataViewModel.observeTotal().observe(viewLifecycleOwner) {
                         val totalOwed = it[apt.roomates[0]]
-                        entries.add(BarEntry(1f, totalOwed!!.toFloat()))
                         if (totalOwed!! > 0.0) {
                             binding.personOneBalance.setTextColor(Color.rgb(139, 0, 0))
                             binding.personOneBalance.text = "You owe them $${String.format("%.2f", totalOwed)}"
@@ -160,7 +148,6 @@ class PaymentsFragment : Fragment() {
                             binding.personOneBalance.text = "They owe you $${String.format("%.2f", abs(totalOwed))}"
                         }
                         val totalOwedTwo = it[apt.roomates[1]]
-                        entries.add(BarEntry(2f, totalOwedTwo!!.toFloat()))
                         if (totalOwedTwo!! > 0.0) {
                             binding.personTwoBalance.setTextColor(Color.rgb(139, 0, 0))
                             binding.personTwoBalance.text = "You owe them $${String.format("%.2f", totalOwedTwo)}"
@@ -168,8 +155,7 @@ class PaymentsFragment : Fragment() {
                             binding.personTwoBalance.setTextColor(Color.rgb( 1,  150,  32))
                             binding.personTwoBalance.text = "They owe you $${String.format("%.2f", abs(totalOwedTwo))}"
                         }
-                        minimum = it.values.min().coerceAtMost(0.0).toFloat()
-                        maximum = it.values.max().coerceAtLeast(0.0).toFloat()
+
                     }
 
                 }
@@ -195,7 +181,6 @@ class PaymentsFragment : Fragment() {
                     }
                     dataViewModel.observeTotal().observe(viewLifecycleOwner) {
                         val totalOwed = it[apt.roomates[0]]
-                        entries.add(BarEntry(1f, totalOwed!!.toFloat()))
                         if (totalOwed!! > 0.0) {
                             binding.personOneBalance.setTextColor(Color.rgb(139, 0, 0))
                             binding.personOneBalance.text = "You owe them $${String.format("%.2f", totalOwed)}"
@@ -204,7 +189,6 @@ class PaymentsFragment : Fragment() {
                             binding.personOneBalance.text = "They owe you $${String.format("%.2f", abs(totalOwed))}"
                         }
                         val totalOwedTwo = it[apt.roomates[1]]
-                        entries.add(BarEntry(2f, totalOwedTwo!!.toFloat()))
                         if (totalOwedTwo!! > 0.0) {
                             binding.personTwoBalance.setTextColor(Color.rgb(139, 0, 0))
                             binding.personTwoBalance.text = "You owe them $${String.format("%.2f", totalOwedTwo)}"
@@ -213,7 +197,6 @@ class PaymentsFragment : Fragment() {
                             binding.personTwoBalance.text = "They owe you $${String.format("%.2f", abs(totalOwedTwo))}"
                         }
                         val totalOwedThree = it[apt.roomates[2]]
-                        entries.add(BarEntry(3f, totalOwedThree!!.toFloat()))
                         if (totalOwedThree!! > 0.0) {
                             binding.personThreeBalance.setTextColor(Color.rgb(139, 0, 0))
                             binding.personThreeBalance.text = "You owe them $${String.format("%.2f", totalOwedThree)}"
@@ -221,8 +204,7 @@ class PaymentsFragment : Fragment() {
                             binding.personThreeBalance.setTextColor(Color.rgb( 1,  150,  32))
                             binding.personThreeBalance.text = "They owe you $${String.format("%.2f", abs(totalOwedThree))}"
                         }
-                        minimum = it.values.min().coerceAtMost(0.0).toFloat()
-                        maximum = it.values.max().coerceAtLeast(0.0).toFloat()
+
                     }
                 }
 
@@ -251,7 +233,6 @@ class PaymentsFragment : Fragment() {
                     }
                     dataViewModel.observeTotal().observe(viewLifecycleOwner) {
                         val totalOwed = it[apt.roomates[0]]
-                        entries.add(BarEntry(2f, totalOwed!!.toFloat()))
                         if (totalOwed!! > 0.0) {
                             binding.personOneBalance.setTextColor(Color.rgb(139, 0, 0))
                             binding.personOneBalance.text = "You owe them $${String.format("%.2f", totalOwed)}"
@@ -260,7 +241,6 @@ class PaymentsFragment : Fragment() {
                             binding.personOneBalance.text = "They owe you $${String.format("%.2f", abs(totalOwed))}"
                         }
                         val totalOwedTwo = it[apt.roomates[1]]
-                        entries.add(BarEntry(2f, totalOwedTwo!!.toFloat()))
                         if (totalOwedTwo!! > 0.0) {
                             binding.personTwoBalance.setTextColor(Color.rgb(139, 0, 0))
                             binding.personTwoBalance.text = "You owe them $${String.format("%.2f", totalOwedTwo)}"
@@ -269,7 +249,6 @@ class PaymentsFragment : Fragment() {
                             binding.personTwoBalance.text = "They owe you $${String.format("%.2f", abs(totalOwedTwo))}"
                         }
                         val totalOwedThree = it[apt.roomates[2]]
-                        entries.add(BarEntry(2f, totalOwedThree!!.toFloat()))
                         if (totalOwedThree!! > 0.0) {
                             binding.personThreeBalance.setTextColor(Color.rgb(139, 0, 0))
                             binding.personThreeBalance.text = "You owe them $${String.format("%.2f", totalOwedThree)}"
@@ -278,7 +257,6 @@ class PaymentsFragment : Fragment() {
                             binding.personThreeBalance.text = "They owe you $${String.format("%.2f", abs(totalOwedThree))}"
                         }
                         val totalOwedFour = it[apt.roomates[3]]
-                        entries.add(BarEntry(2f, totalOwedFour!!.toFloat()))
                         if (totalOwedFour!! > 0.0) {
                             binding.personFourBalance.setTextColor(Color.rgb(139, 0, 0))
                             binding.personFourBalance.text = "You owe them $${String.format("%.2f", totalOwedFour)}"
@@ -286,8 +264,7 @@ class PaymentsFragment : Fragment() {
                             binding.personFourBalance.setTextColor(Color.rgb( 1,  150,  32))
                             binding.personFourBalance.text = "They owe you $${String.format("%.2f", abs(totalOwedFour))}"
                         }
-                        minimum = it.values.min().coerceAtMost(0.0).toFloat()
-                        maximum = it.values.max().coerceAtLeast(0.0).toFloat()
+
                     }
 
                 }
@@ -295,18 +272,6 @@ class PaymentsFragment : Fragment() {
             }
 
 
-            val colors = ArrayList<Int>()
-            for (entry in entries) {
-                colors.add(if (entry.y > 0) Color.GREEN else Color.RED)
-            }
-            val dataSet = BarDataSet(entries, "How much owed")
-            dataSet.colors = colors
-            dataSet.setDrawValues(false)
-            val data = BarData(dataSet)
-            barChart.axisLeft.axisMinimum = minimum// Set minimum Y-axis value (to show negative values)
-            barChart.axisLeft.axisMaximum = maximum // Set maximum Y-axis value
-            barChart.data = data
-            barChart.invalidate()
         }
     }
 
